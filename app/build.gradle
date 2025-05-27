@@ -2,15 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
-
-}
-plugins {
-    id 'com.android.application'
     id 'kotlin-kapt'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
+
+
 }
+
 
 android {
     namespace 'com.example.animeheaven'
@@ -83,7 +81,10 @@ implementation'androidx.comstraintlayout:2.1.4'
     //viewmdoel amd LiveData
     implementation 'androidx.liufecycle:lifecycle-viewmodel-ktx:2.7.0'
     implementation 'androidx.liufecycle:lifecycle-livedata-ktx:2.7.0'
-    kapt{
-        correctErrorTypes =true
-    }
+
 }
+kapt{
+    correctErrorTypes =true
+}
+
+apply plugin: 'com.google.gms.google-services'
