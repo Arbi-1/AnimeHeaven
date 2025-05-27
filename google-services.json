@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "580472084449",
+    "project_id": "animeheaven-2604a",
+    "storage_bucket": "animeheaven-2604a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:580472084449:android:89e63e32402a121b0ca4a0",
+        "android_client_info": {
+          "package_name": "com.example.animeheaven"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrNpG127lMTKp-smIDYZqg4H5qR0tTWXI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
