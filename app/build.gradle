@@ -7,9 +7,20 @@ plugins {
     id 'com.google.firebase.crashlytics'
 }
 
+apply plugin: 'com.google.gms.google-services'
+
+dependencies {
+    implementation platform(libs.firebase.bom) // or latest
+    implementation libs.firebase.analytics
+    // other firebase services you're using
+}
+
+
+
+
 android {
     namespace 'com.example.animeheaven'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.example.animeheaven"
@@ -61,26 +72,26 @@ dependencies {
     debugImplementation libs.androidx.ui.tooling
     debugImplementation libs.androidx.ui.test.manifest
 
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation libs.androidx.core.ktx.v1160
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.constraintlayout
 
     // Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:33.14.0')
-    implementation 'com.google.firebase:firebase-auth-ktx'
-    implementation 'com.google.firebase:firebase-firestore-ktx'
-    implementation 'com.google.firebase:firebase-messaging-ktx'
-    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.auth.ktx
+    implementation libs.firebase.firestore.ktx
+    implementation libs.firebase.messaging.ktx
+    implementation libs.firebase.analytics.ktx
 
     // Room
-    implementation "androidx.room:room-runtime:2.6.1"
-    kapt "androidx.room:room-compiler:2.6.1"
-    implementation "androidx.room:room-ktx:2.6.1"
+    implementation libs.androidx.room.runtime
+    kapt libs.androidx.room.compiler
+    implementation libs.androidx.room.ktx
 
     // ViewModel and LiveData
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.lifecycle.livedata.ktx
 }
 
 kapt {
