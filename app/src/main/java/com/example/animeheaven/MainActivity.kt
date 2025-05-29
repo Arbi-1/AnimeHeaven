@@ -9,6 +9,7 @@ import com.example.animeheaven.model.Anime
 
 class MainActivity : AppCompatActivity() {
 
+
     private lateinit var animeRecyclerView: RecyclerView
     private lateinit var adapter: AnimeAdapter
     private val animeList = mutableListOf<Anime>()
@@ -29,5 +30,9 @@ class MainActivity : AppCompatActivity() {
 
         adapter = AnimeAdapter(animeList)
         animeRecyclerView.adapter = adapter
+
+
+
+
     }
 }
