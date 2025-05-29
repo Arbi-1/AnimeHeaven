@@ -9,15 +9,6 @@ plugins {
 
 apply plugin: 'com.google.gms.google-services'
 
-dependencies {
-    implementation platform(libs.firebase.bom) // or latest
-    implementation libs.firebase.analytics
-    // other firebase services you're using
-}
-
-
-
-
 android {
     namespace 'com.example.animeheaven'
     compileSdk 35
@@ -77,12 +68,15 @@ dependencies {
     implementation libs.material
     implementation libs.androidx.constraintlayout
 
-    // Firebase BoM
+    // Firebase BoM and dependencies
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.auth.ktx
     implementation libs.firebase.firestore.ktx
     implementation libs.firebase.messaging.ktx
     implementation libs.firebase.analytics.ktx
+
+    // Add Google Sign-In here
+    implementation libs.google.play.services.auth
 
     // Room
     implementation libs.androidx.room.runtime

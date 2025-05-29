@@ -12,7 +12,20 @@
           "package_name": "com.example.animeheaven"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "580472084449-t0v39c880v5efgungq1ocesdc9nncpkv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.animeheaven",
+            "certificate_hash": "7305d49355609891c0277aab105e39bbe99526e7"
+          }
+        },
+        {
+          "client_id": "580472084449-kv7ipim61j17filpjbc7dv2h2iee83nh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDrNpG127lMTKp-smIDYZqg4H5qR0tTWXI"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "580472084449-kv7ipim61j17filpjbc7dv2h2iee83nh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
