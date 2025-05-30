@@ -5,4 +5,7 @@
     <string name="password">Password</string>
     <string name="don_t_have_an_account_register">Don\'t have an account? Register</string>
     <string name="default_web_client_id">580472084449-kv7ipim61j17filpjbc7dv2h2iee83nh.apps.googleusercontent.com</string>
+    <string name="facebook_app_id">1274607884024604</string>
+    <string name="fb_login_protocol_scheme">fb1274607884024604</string>
+
 </resources>

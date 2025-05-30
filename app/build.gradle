@@ -77,6 +77,8 @@ dependencies {
 
     // Add Google Sign-In here
     implementation libs.google.play.services.auth
+    implementation libs.facebook.login
+
 
     // Room
     implementation libs.androidx.room.runtime
