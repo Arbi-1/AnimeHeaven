@@ -9,7 +9,8 @@
         android:id="@+id/nameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Name"
+        android:autofillHints=""
+        android:hint="@string/name"
         android:inputType="textPersonName"
         android:layout_marginBottom="16dp"
         android:minHeight="48dp" />
@@ -18,6 +19,7 @@
         android:id="@+id/emailEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints=""
         android:hint="Email"
         android:inputType="textEmailAddress"
         android:layout_marginBottom="16dp"

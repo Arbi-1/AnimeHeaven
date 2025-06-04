@@ -107,6 +107,13 @@ dependencies {
 // Kotlin Extensions and Coroutines support for Room
     implementation libs.androidx.room.ktx
 
+    // Room components
+    implementation libs.androidx.room.runtime
+    kapt libs.androidx.room.compiler
+
+// Coroutine support for Room
+    implementation libs.androidx.room.ktx
+
 
 
 }

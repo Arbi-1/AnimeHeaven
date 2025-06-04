@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">АнимеХевен</string>
+    <string name="list_of_anime_titles">Листа на аниме наслови</string>
+    <string name="login">Најава</string>
+    <string name="register">Регистрација</string>
+    <string name="email">Е-пошта</string>
+    <string name="password">Лозинка</string>
+    <string name="logout">Одјава</string>
+    <string name="loading">Се вчитува...</string>
+    <!-- Add all other translations corresponding to English strings -->
+</resources>
