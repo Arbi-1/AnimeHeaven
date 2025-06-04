@@ -10,10 +10,11 @@ class MyApplication : Application() {
         super.onCreate()
 
         // Initialize Firebase
-       FirebaseApp.initializeApp(this)
+        FirebaseApp.initializeApp(this)
 
-        // Initialize Facebook SDK (new recommended way)
-        //FacebookSdk.fullyInitialize()
-        //AppEventsLogger.activateApp(this)
+        // Initialize Facebook SDK
+        FacebookSdk.setApplicationId("1274607884024604") // optional, but ensures correct App ID
+        FacebookSdk.sdkInitialize(applicationContext)
+        AppEventsLogger.activateApp(this)
     }
 }

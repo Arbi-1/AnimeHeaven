@@ -12,5 +12,10 @@
     <string name="loading">Loading</string>
     <string name="don_t_have_an_account_register" translatable="false">Dont have an account? Register</string>
     <string name="register">Register</string>
-    <string name="name">Name</string>
+    <string name="name" translatable="false">Name</string>
+    <string name="facebook_client_token" translatable="false">34ecf49b816536f447a47c499d1cb9da</string>
+
+
+
+
 </resources>

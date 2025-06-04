@@ -3,7 +3,9 @@ agp = "8.9.3"
 appcompat = "1.7.0"
 constraintlayout = "2.2.1"
 coreKtxVersion = "1.16.0"
+facebookAndroidSdk = "18.0.3"
 facebookLogin = "18.0.3"
+facebookLoginVersion = "latest.release"
 firebaseBom = "33.14.0"
 firebaseMessaging = "24.1.1"
 kotlin = "2.0.21"
@@ -20,6 +22,7 @@ roomKtx = "2.7.1"
 roomRuntime = "2.7.1"
 
 [libraries]
+android-facebook-android-sdk = { module = "com.facebook.android:facebook-android-sdk", version.ref = "facebookAndroidSdk" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +33,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebookLogin" }
+facebook-login-vlatestrelease = { module = "com.facebook.android:facebook-login", version.ref = "facebookLoginVersion" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }

@@ -3,32 +3,32 @@ package com.example.animeheaven
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.facebook.*
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.tasks.Task
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.*
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private lateinit var callbackManager: CallbackManager
 
     private val masterEmail = "admin@example.com"
     private val masterPassword = "admin123"
 
     private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            val data = result.data
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             handleGoogleSignInResult(task)
         } else {
             Toast.makeText(this, "Google sign in cancelled", Toast.LENGTH_SHORT).show()
@@ -41,18 +41,40 @@ class LoginActivity : AppCompatActivity() {
 
         firebaseAuth = FirebaseAuth.getInstance()
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        callbackManager = CallbackManager.Factory.create()
 
         val emailEditText = findViewById<EditText>(R.id.emailEditText)
         val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
         val loginButton = findViewById<Button>(R.id.loginButton)
         val guestButton = findViewById<Button>(R.id.buttonGuest)
         val googleButton = findViewById<SignInButton>(R.id.buttonGoogleSignIn)
-        val registerTextView = findViewById<TextView>(R.id.registerTextView)
         val facebookButton = findViewById<Button>(R.id.buttonFacebook)
+        val registerTextView = findViewById<TextView>(R.id.registerTextView)
         val forgotPasswordTextView = findViewById<TextView>(R.id.forgotPasswordTextView)
 
-        facebookButton.isEnabled = false
+        // Facebook Login
+        facebookButton.setOnClickListener {
+            LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
+        }
 
+        LoginManager.getInstance().registerCallback(callbackManager,
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(loginResult: LoginResult) {
+                    Log.d("LoginActivity", "facebook:onSuccess:$loginResult")
+                    handleFacebookAccessToken(loginResult.accessToken)
+                }
+
+                override fun onCancel() {
+                    Toast.makeText(this@LoginActivity, "Facebook login canceled", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onError(error: FacebookException) {
+                    Log.e("LoginActivity", "facebook:onError", error)
+                    Toast.makeText(this@LoginActivity, "Facebook login failed", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+        // Email/Password login + Master login
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString()
@@ -70,7 +92,7 @@ class LoginActivity : AppCompatActivity() {
             }
 
             firebaseAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) { task ->
+                .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         UserUtils.saveUserToFirestore(firebaseAuth.currentUser!!)
                         logLoginEvent("email", email)
@@ -82,9 +104,10 @@ class LoginActivity : AppCompatActivity() {
                 }
         }
 
+        // Guest login
         guestButton.setOnClickListener {
             firebaseAuth.signInAnonymously()
-                .addOnCompleteListener(this) { task ->
+                .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         UserUtils.saveUserToFirestore(firebaseAuth.currentUser!!)
                         logLoginEvent("anonymous", "guest")
@@ -96,11 +119,11 @@ class LoginActivity : AppCompatActivity() {
                 }
         }
 
+        // Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         googleButton.setOnClickListener {
@@ -108,19 +131,30 @@ class LoginActivity : AppCompatActivity() {
             googleSignInLauncher.launch(signInIntent)
         }
 
+        // Navigate to RegisterActivity
         registerTextView.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
+        // Forgot password
         forgotPasswordTextView.setOnClickListener {
             showResetPasswordDialog()
         }
     }
 
-    private fun handleGoogleSignInResult(completedTask: Task<GoogleSignInAccount>) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        callbackManager.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>) {
         try {
-            val account = completedTask.getResult(Exception::class.java)!!
-            firebaseAuthWithGoogle(account.idToken!!, account.email ?: "unknown")
+            val account = task.getResult(Exception::class.java)
+            if (account != null) {
+                firebaseAuthWithGoogle(account.idToken!!, account.email ?: "unknown")
+            } else {
+                Toast.makeText(this, "Google sign in failed.", Toast.LENGTH_SHORT).show()
+            }
         } catch (e: Exception) {
             Toast.makeText(this, "Google sign in failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
@@ -129,7 +163,7 @@ class LoginActivity : AppCompatActivity() {
     private fun firebaseAuthWithGoogle(idToken: String, email: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
+            .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     UserUtils.saveUserToFirestore(firebaseAuth.currentUser!!)
                     logLoginEvent("google", email)
@@ -137,6 +171,25 @@ class LoginActivity : AppCompatActivity() {
                     openMainActivity()
                 } else {
                     Toast.makeText(this, "Google login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun handleFacebookAccessToken(token: AccessToken) {
+        val credential = FacebookAuthProvider.getCredential(token.token)
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    UserUtils.saveUserToFirestore(firebaseAuth.currentUser!!)
+                    logLoginEvent("facebook", firebaseAuth.currentUser?.email ?: "unknown")
+                    Toast.makeText(this, "Facebook login successful!", Toast.LENGTH_SHORT).show()
+                    openMainActivity()
+                } else {
+                    if (task.exception is FirebaseAuthUserCollisionException) {
+                        Toast.makeText(this, "Email already in use with another provider.", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this, "Facebook login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
     }
@@ -160,10 +213,7 @@ class LoginActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
-        builder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.cancel()
-        }
-
+        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
         builder.show()
     }
 
