@@ -88,8 +88,17 @@ dependencies {
     // ViewModel and LiveData
     implementation libs.androidx.lifecycle.viewmodel.ktx
     implementation libs.androidx.lifecycle.livedata.ktx
+
+    // Firebase BOM - manages versions
+    implementation platform(libs.firebase.bom)
+
+// Firebase Analytics (required for base integration)
+    implementation libs.google.firebase.analytics
+
 }
 
 kapt {
     correctErrorTypes = true
 }
+
+apply plugin: 'com.google.gms.google-services'
