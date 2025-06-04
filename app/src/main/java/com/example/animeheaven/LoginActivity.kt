@@ -2,10 +2,9 @@ package com.example.animeheaven
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.text.InputType
+import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -13,6 +12,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.tasks.Task
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
@@ -20,18 +20,27 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
-    private val RC_SIGN_IN = 9001
+    private val masterEmail = "admin@example.com"
+    private val masterPassword = "admin123"
 
-    // Define your master email and password here:
-    private val MASTER_EMAIL = "admin@example.com"
-    private val MASTER_PASSWORD = "admin123"
+    private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data = result.data
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            handleGoogleSignInResult(task)
+        } else {
+            Toast.makeText(this, "Google sign in cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         firebaseAuth = FirebaseAuth.getInstance()
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         val emailEditText = findViewById<EditText>(R.id.emailEditText)
         val passwordEditText = findViewById<EditText>(R.id.passwordEditText)
@@ -40,11 +49,10 @@ class LoginActivity : AppCompatActivity() {
         val googleButton = findViewById<SignInButton>(R.id.buttonGoogleSignIn)
         val registerTextView = findViewById<TextView>(R.id.registerTextView)
         val facebookButton = findViewById<Button>(R.id.buttonFacebook)
+        val forgotPasswordTextView = findViewById<TextView>(R.id.forgotPasswordTextView)
 
-        // Disable Facebook login button for now (you can enable later)
         facebookButton.isEnabled = false
 
-        // Email/password login
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString()
@@ -54,17 +62,18 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Check master email and password first
-            if (email == MASTER_EMAIL && password == MASTER_PASSWORD) {
+            if (email == masterEmail && password == masterPassword) {
+                logLoginEvent("master", email)
                 Toast.makeText(this, "Master login successful!", Toast.LENGTH_SHORT).show()
                 openMainActivity()
                 return@setOnClickListener
             }
 
-            // Normal Firebase login
             firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
+                        UserUtils.saveUserToFirestore(firebaseAuth.currentUser!!)
+                        logLoginEvent("email", email)
                         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
                         openMainActivity()
                     } else {
@@ -73,11 +82,12 @@ class LoginActivity : AppCompatActivity() {
                 }
         }
 
-        // Guest login (anonymous)
         guestButton.setOnClickListener {
             firebaseAuth.signInAnonymously()
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
+                        UserUtils.saveUserToFirestore(firebaseAuth.currentUser!!)
+                        logLoginEvent("anonymous", "guest")
                         Toast.makeText(this, "Logged in as guest!", Toast.LENGTH_SHORT).show()
                         openMainActivity()
                     } else {
@@ -86,9 +96,8 @@ class LoginActivity : AppCompatActivity() {
                 }
         }
 
-        // Google Sign-In setup
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)) // Make sure this string exists in your strings.xml
+            .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
 
@@ -96,39 +105,34 @@ class LoginActivity : AppCompatActivity() {
 
         googleButton.setOnClickListener {
             val signInIntent = googleSignInClient.signInIntent
-            startActivityForResult(signInIntent, RC_SIGN_IN)
+            googleSignInLauncher.launch(signInIntent)
         }
 
-        // Register text clicked - open Register activity (implement your own RegisterActivity)
         registerTextView.setOnClickListener {
-            val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
-    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleGoogleSignInResult(task)
+        forgotPasswordTextView.setOnClickListener {
+            showResetPasswordDialog()
         }
     }
 
     private fun handleGoogleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(Exception::class.java)!!
-            firebaseAuthWithGoogle(account.idToken!!)
+            firebaseAuthWithGoogle(account.idToken!!, account.email ?: "unknown")
         } catch (e: Exception) {
             Toast.makeText(this, "Google sign in failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String) {
+    private fun firebaseAuthWithGoogle(idToken: String, email: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         firebaseAuth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
+                    UserUtils.saveUserToFirestore(firebaseAuth.currentUser!!)
+                    logLoginEvent("google", email)
                     Toast.makeText(this, "Google login successful!", Toast.LENGTH_SHORT).show()
                     openMainActivity()
                 } else {
@@ -137,8 +141,53 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
+    private fun showResetPasswordDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        builder.setTitle("Reset Password")
+
+        val input = EditText(this)
+        input.hint = "Enter your email"
+        input.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        builder.setView(input)
+
+        builder.setPositiveButton("Send") { dialog, _ ->
+            val email = input.text.toString().trim()
+            if (email.isEmpty()) {
+                Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show()
+            } else {
+                sendPasswordResetEmail(email)
+            }
+            dialog.dismiss()
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
+    }
+
+    private fun sendPasswordResetEmail(email: String) {
+        firebaseAuth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "Reset email sent. Check your inbox.", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "Failed to send reset email: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
     private fun openMainActivity() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+    private fun logLoginEvent(method: String, email: String) {
+        val bundle = Bundle().apply {
+            putString("login_method", method)
+            putString("user_email", email)
+        }
+        firebaseAnalytics.logEvent("user_login", bundle)
     }
 }

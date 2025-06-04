@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.animeheaven.adapter.AnimeAdapter
 import com.example.animeheaven.model.Anime
+import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -17,9 +18,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: AnimeAdapter
     private val animeList = mutableListOf<Anime>()
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize Firebase Analytics
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
+        // Log screen view
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, Bundle().apply {
+            putString(FirebaseAnalytics.Param.SCREEN_NAME, "MainActivity")
+            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "MainActivity")
+        })
 
         animeRecyclerView = findViewById(R.id.animeRecyclerView)
         animeRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -30,9 +42,9 @@ class MainActivity : AppCompatActivity() {
         // Load data asynchronously
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                populateAnimeList() // Run heavy/populate logic in background thread
+                populateAnimeList()
             }
-            adapter.notifyDataSetChanged() // Update UI on main thread
+            adapter.notifyDataSetChanged()
         }
     }
 

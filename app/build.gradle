@@ -8,6 +8,9 @@ plugins {
 }
 
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'kotlin-kapt'
+
+
 
 android {
     namespace 'com.example.animeheaven'
@@ -94,6 +97,17 @@ dependencies {
 
 // Firebase Analytics (required for base integration)
     implementation libs.google.firebase.analytics
+
+    implementation libs.firebase.messaging
+
+    // Room components
+    implementation libs.androidx.room.runtime
+    kapt libs.androidx.room.compiler
+
+// Kotlin Extensions and Coroutines support for Room
+    implementation libs.androidx.room.ktx
+
+
 
 }
 

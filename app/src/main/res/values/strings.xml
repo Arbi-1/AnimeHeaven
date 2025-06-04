@@ -7,5 +7,6 @@
     <string name="default_web_client_id">580472084449-kv7ipim61j17filpjbc7dv2h2iee83nh.apps.googleusercontent.com</string>
     <string name="facebook_app_id">1274607884024604</string>
     <string name="fb_login_protocol_scheme">fb1274607884024604</string>
+    <string name="list_of_anime_titles">List of anime titles</string>
 
 </resources>
